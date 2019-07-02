@@ -1,0 +1,110 @@
+package model;
+
+import java.awt.*;
+
+public class Ellipse extends Shape 
+{
+	private static final long serialVersionUID = 1L;
+	private boolean flag = false;
+	public Ellipse(float thickness, Color color, Point begin, Point end) 
+	{
+		this.thickness = thickness;
+		this.color = color;
+		this.pb = begin;
+		this.pe = end;
+		this.status = 0;
+	}
+	
+	@Override
+	public void draw(Graphics g) 
+	{
+		Graphics2D g2d = (Graphics2D)g;
+		
+		if(status == 0)
+		{
+			g2d.setStroke(new BasicStroke(this.thickness));
+		}
+		else
+		{
+			g2d.setStroke(new BasicStroke(this.thickness + 1));
+		}
+		g2d.setColor(color);
+		if(flag)
+		{
+			g2d.fillOval(Math.min(pb.x, pe.x), Math.min(pb.y, pe.y), Math.abs(pe.x - pb.x), Math.abs(pe.y - pb.y));
+		}
+		else
+		{
+			g2d.drawOval(Math.min(pb.x, pe.x), Math.min(pb.y, pe.y), Math.abs(pe.x - pb.x), Math.abs(pe.y - pb.y));
+		}
+		if(status != 0)
+		{
+			g2d.setColor(Color.RED);
+			g2d.setStroke(new BasicStroke(1.0f));
+			g2d.drawRect(Math.min(pb.x, pe.x), Math.min(pb.y, pe.y), Math.abs(pe.x - pb.x), Math.abs(pe.y - pb.y));
+			g2d.setStroke(new BasicStroke(this.thickness + 3));
+			g2d.drawLine(pb.x, pb.y, pb.x, pb.y);
+			g2d.drawLine(pe.x, pe.y, pe.x, pe.y);	
+		}
+	}
+
+	@Override
+	public boolean isSelect(Point p) 
+	{
+		double minx = Math.min(pb.getX(), pe.getX());
+		double miny = Math.min(pb.getY(), pe.getY());
+		double centerx = (pb.getX() + pe.getX()) / 2;
+		double centery = (pb.getY() + pe.getY()) / 2;
+		
+		double ox = p.getX() - centerx;
+		double oy = p.getY() - centery;
+		
+		double a = centerx - minx;
+		double b = centery - miny;
+		
+		double t1 = ox * ox / ((a + thickness / 2) * (a + thickness / 2)) + oy * oy / ((b + thickness / 2) * (b + thickness / 2));
+		double t2 = ox * ox / ((a - thickness / 2) * (a - thickness / 2)) + oy * oy / ((b - thickness / 2) * (b - thickness / 2));
+		
+		if(t1 <= 1 && t2 >= 1)
+			return true;
+		return false;
+	}
+	
+	@Override
+	public void move(Point start, Point end)
+	{
+		pb.x += end.x - start.x;
+		pb.y += end.y - start.y;
+		pe.x += end.x - start.x;
+		pe.y += end.y - start.y;
+	}
+	
+	public void setfill(boolean flag)
+	{
+		this.flag = flag;
+	}
+
+	@Override
+	public void changeSize(double sx, double sy) 
+	{
+		
+		Point base = new Point(0, 0);
+		base.x = (pb.x + pe.x) / 2;
+		base.y = (pb.y + pe.y) / 2;
+		
+		pb = resize(sx, sy, pb, base);
+		pe = resize(sx, sy, pe, base);
+	}
+
+	@Override
+	public void changeAngle(double angle) 
+	{
+		Point base = new Point(0, 0);
+		base.x = (pb.x + pe.x) / 2;
+		base.y = (pb.y + pe.y) / 2;
+		
+		pb = rotate(angle, pb, base);
+		pe = rotate(angle, pe, base);
+		
+	}
+}
